@@ -21,13 +21,47 @@ The development database uses `localhost:5432`, database `applytrack`, user
 `applytrack`, and password `applytrack`. These defaults can be replaced with the
 `DATABASE_URL`, `DATABASE_USERNAME`, and `DATABASE_PASSWORD` environment variables.
 
-## Run the API
+## Run the application and UI
 
 ```powershell
 mvn spring-boot:run
 ```
 
-The API runs at `http://localhost:8080`.
+Open the UI at [http://localhost:8080](http://localhost:8080). The dashboard is
+served by Spring Boot and calls the API through same-origin `/api/v1` URLs.
+
+### Deploy to Vercel
+
+This repository is deployed as one Spring Boot container. `Dockerfile.vercel` is
+at the repository root, and Spring Boot serves the dashboard from
+`src/main/resources/static`.
+
+Before deploying, commit **all** of these files, including the dashboard assets:
+
+```powershell
+git add Dockerfile.vercel .dockerignore src/main/resources/static src/main/java src/main/resources pom.xml README.md
+git commit -m "Prepare Spring Boot app for Vercel"
+git push origin main
+```
+
+In Vercel, set the project Root Directory to the repository root and add this
+Production environment variable:
+
+```text
+DATABASE_PASSWORD=<your Neon database password>
+```
+
+Do not add the password to `application.properties` or commit it to Git. Redeploy
+the commit after the variable is saved. Verify these routes after deployment:
+
+```text
+GET /api/v1/health
+GET /api/v1/analytics/summary
+GET /
+```
+
+The dashboard calls same-origin `/api/v1/...` endpoints, so it needs no separate
+frontend URL or CORS configuration.
 
 ## API endpoints
 

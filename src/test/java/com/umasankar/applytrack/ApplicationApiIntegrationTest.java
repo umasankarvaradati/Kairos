@@ -9,8 +9,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -20,6 +22,30 @@ class ApplicationApiIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Test
+    void servesDashboardAndHealthEndpoint() throws Exception {
+        mockMvc.perform(get("/"))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/index.html"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("KAIROS")));
+
+        mockMvc.perform(get("/api/v1/health"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("UP"));
+    }
+
+    @Test
+    void allowsCrossOriginApiRequests() throws Exception {
+        mockMvc.perform(options("/api/v1/applications")
+                .header("Origin", "https://example-frontend.com")
+                .header("Access-Control-Request-Method", "POST"))
+            .andExpect(status().isOk())
+            .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                .header().string("Access-Control-Allow-Origin", "https://example-frontend.com"));
+    }
 
     @Test
     void createsFiltersAndAggregatesApplications() throws Exception {
