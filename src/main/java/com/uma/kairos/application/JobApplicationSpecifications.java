@@ -4,17 +4,19 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public final class JobApplicationSpecifications {
 
     private JobApplicationSpecifications() {
     }
 
-    public static Specification<JobApplication> matches(String search, ApplicationStatus status,
+    public static Specification<JobApplication> matches(UUID userId, String search, ApplicationStatus status,
                                                          ApplicationSource source, String location,
                                                          LocalDate fromDate, LocalDate toDate) {
         return (root, query, criteriaBuilder) -> {
             var predicate = criteriaBuilder.conjunction();
+            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("userId"), userId));
 
             if (StringUtils.hasText(search)) {
                 String pattern = "%" + search.trim().toLowerCase() + "%";

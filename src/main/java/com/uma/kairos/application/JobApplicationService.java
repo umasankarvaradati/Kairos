@@ -1,5 +1,6 @@
 package com.umasankar.applytrack.application;
 
+import com.umasankar.applytrack.auth.CurrentUser;
 import com.umasankar.applytrack.common.api.PageResponse;
 import com.umasankar.applytrack.common.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
@@ -23,7 +24,7 @@ public class JobApplicationService {
     @Transactional
     public JobApplicationResponse create(JobApplicationRequest request) {
         JobApplication application = new JobApplication(
-            clean(request.companyName()), clean(request.jobTitle()), clean(request.jobUrl()), clean(request.location()),
+            CurrentUser.id(), clean(request.jobId()), clean(request.companyName()), clean(request.jobTitle()), clean(request.jobUrl()), clean(request.location()),
             request.applicationSource(), request.status(), request.applicationDate(), clean(request.notes())
         );
         return JobApplicationResponse.from(repository.save(application));
@@ -37,7 +38,7 @@ public class JobApplicationService {
                                                          ApplicationSource source, String location, LocalDate fromDate,
                                                          LocalDate toDate, Pageable pageable) {
         Page<JobApplication> result = repository.findAll(
-            JobApplicationSpecifications.matches(search, status, source, location, fromDate, toDate), pageable);
+            JobApplicationSpecifications.matches(CurrentUser.id(), search, status, source, location, fromDate, toDate), pageable);
         return PageResponse.from(result, JobApplicationResponse::from);
     }
 
@@ -45,7 +46,7 @@ public class JobApplicationService {
     public JobApplicationResponse update(UUID id, JobApplicationRequest request) {
         JobApplication application = findById(id);
         application.update(
-            clean(request.companyName()), clean(request.jobTitle()), clean(request.jobUrl()), clean(request.location()),
+            clean(request.jobId()), clean(request.companyName()), clean(request.jobTitle()), clean(request.jobUrl()), clean(request.location()),
             request.applicationSource(), request.status(), request.applicationDate(), clean(request.notes())
         );
         return JobApplicationResponse.from(application);
@@ -57,7 +58,7 @@ public class JobApplicationService {
     }
 
     private JobApplication findById(UUID id) {
-        return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
+        return repository.findByIdAndUserId(id, CurrentUser.id()).orElseThrow(() -> new ResourceNotFoundException(id));
     }
 
     private String clean(String value) {

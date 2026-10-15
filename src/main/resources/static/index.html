@@ -7,9 +7,53 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <section class="auth-screen" id="auth-screen" hidden>
+    <div class="auth-card">
+      <a class="brand" href="/">KAIROS <span>Job tracker</span></a>
+      <p class="eyebrow">YOUR NEXT OPPORTUNITY</p>
+      <h1>Sign in to your tracker.</h1>
+      <div class="auth-error" id="auth-error" aria-live="polite"></div>
+      <div class="auth-forms" id="auth-forms">
+        <form id="login-form" autocomplete="off">
+          <h2>Sign in</h2>
+          <label>Email <input name="email" type="email" autocomplete="off" required maxlength="320"></label>
+          <label>Password <input name="password" type="password" autocomplete="new-password" required></label>
+          <button class="button primary" type="submit">Sign in</button>
+          <button class="text-button forgot-password" id="forgot-password-button" type="button">Forgot password?</button>
+        </form>
+        <form id="register-form" autocomplete="off">
+          <h2>Create account</h2>
+          <label>Name <input name="name" autocomplete="off" required maxlength="150"></label>
+          <label>Email <input name="email" type="email" autocomplete="off" required maxlength="320"></label>
+          <label>Password <input name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="72"></label>
+          <button class="button primary" type="submit">Create account</button>
+        </form>
+      </div>
+      <section class="reset-panel" id="reset-panel" hidden>
+        <h2>Reset your password</h2>
+        <p class="reset-status" id="reset-status" role="status" aria-live="polite"></p>
+        <form id="request-reset-form">
+          <label>Email <input id="reset-email" name="email" type="email" autocomplete="email" required maxlength="320"></label>
+          <button class="button primary" type="submit">Send verification code</button>
+        </form>
+        <form id="verify-reset-form" hidden>
+          <label>6-digit code <input id="reset-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
+          <button class="button primary" type="submit">Verify code</button>
+        </form>
+        <form id="complete-reset-form" hidden>
+          <label>New password <input name="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="72" required></label>
+          <label>Confirm new password <input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="72" required></label>
+          <button class="button primary" type="submit">Update password and sign in</button>
+        </form>
+        <button class="text-button" id="back-to-signin" type="button">Back to sign in</button>
+      </section>
+    </div>
+  </section>
+  <div id="app-screen" hidden>
   <header class="topbar">
     <a class="brand" href="/">KAIROS <span>Job tracker</span></a>
-    <button class="button primary" id="new-entry-button" type="button">+ Add application</button>
+    <div class="topbar-actions"><span id="signed-in-user"></span><button class="button quiet" id="sign-out-button" type="button">Sign out</button><button class="button primary" id="new-entry-button" type="button">+ Add application</button></div>
   </header>
 
   <main class="page-shell">
@@ -34,6 +78,14 @@
           <div><p class="eyebrow">YOUR PIPELINE</p><h2>Applications</h2></div>
           <span class="result-count" id="result-count">Loading…</span>
         </div>
+
+        <form class="user-template-form" id="referral-template-form">
+          <div><p class="eyebrow">REUSABLE MESSAGE</p><h3>Your referral message template</h3><p>New referral contacts get a copy. Editing this later won’t change existing contacts.</p></div>
+          <label for="referral-template">Message template</label>
+          <textarea id="referral-template" name="template" rows="5" maxlength="10000" required></textarea>
+          <p class="placeholder-hint">Placeholders: {{name}}, {{job_ID}}, {{role}}, {{company}}, {{jobUrl}}, {{senderName}}. Unknown placeholders are kept as written.</p>
+          <div class="template-actions"><span id="template-save-status" role="status" aria-live="polite"></span><button class="button primary" type="submit">Save template</button></div>
+        </form>
 
         <form class="filters" id="filters-form">
           <label class="search-field"><span class="sr-only">Search applications</span><input id="search" name="search" type="search" placeholder="Search company or role"></label>
@@ -70,6 +122,7 @@
       <div class="form-grid">
         <label>Company name <input id="companyName" required maxlength="150" placeholder="Acme Inc."></label>
         <label>Job title <input id="jobTitle" required maxlength="150" placeholder="Frontend Developer"></label>
+        <label>Job ID <input id="jobId" maxlength="100" placeholder="JR-12345"></label>
         <label>Application date <input id="applicationDate" type="date" required></label>
         <label>Status <select id="status" required></select></label>
         <label>Source <select id="applicationSource"><option value="">Not specified</option></select></label>
@@ -81,6 +134,7 @@
       <div class="dialog-actions"><button class="button quiet" id="cancel-dialog" type="button">Cancel</button><button class="button primary" id="save-button" type="submit">Save application</button></div>
     </form>
   </dialog>
+  </div>
   <script src="app.js"></script>
 </body>
 </html>

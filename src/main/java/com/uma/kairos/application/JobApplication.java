@@ -20,6 +20,12 @@ public class JobApplication {
     @Id
     private UUID id;
 
+    @Column(name = "user_id")
+    private UUID userId;
+
+    @Column(name = "job_id", length = 100)
+    private String jobId;
+
     @Column(name = "company_name", nullable = false, length = 150)
     private String companyName;
 
@@ -55,15 +61,17 @@ public class JobApplication {
     protected JobApplication() {
     }
 
-    public JobApplication(String companyName, String jobTitle, String jobUrl, String location,
+    public JobApplication(UUID userId, String jobId, String companyName, String jobTitle, String jobUrl, String location,
                           ApplicationSource applicationSource, ApplicationStatus status,
                           LocalDate applicationDate, String notes) {
-        update(companyName, jobTitle, jobUrl, location, applicationSource, status, applicationDate, notes);
+        this.userId = userId;
+        update(jobId, companyName, jobTitle, jobUrl, location, applicationSource, status, applicationDate, notes);
     }
 
-    public void update(String companyName, String jobTitle, String jobUrl, String location,
+    public void update(String jobId, String companyName, String jobTitle, String jobUrl, String location,
                        ApplicationSource applicationSource, ApplicationStatus status,
                        LocalDate applicationDate, String notes) {
+        this.jobId = jobId;
         this.companyName = companyName;
         this.jobTitle = jobTitle;
         this.jobUrl = jobUrl;
@@ -87,6 +95,8 @@ public class JobApplication {
     }
 
     public UUID getId() { return id; }
+    public UUID getUserId() { return userId; }
+    public String getJobId() { return jobId; }
     public String getCompanyName() { return companyName; }
     public String getJobTitle() { return jobTitle; }
     public String getJobUrl() { return jobUrl; }

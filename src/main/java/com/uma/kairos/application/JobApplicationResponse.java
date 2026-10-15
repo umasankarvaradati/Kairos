@@ -6,6 +6,7 @@ import java.util.UUID;
 
 public record JobApplicationResponse(
     UUID id,
+    String jobId,
     String companyName,
     String jobTitle,
     String jobUrl,
@@ -19,7 +20,7 @@ public record JobApplicationResponse(
 ) {
     static JobApplicationResponse from(JobApplication application) {
         return new JobApplicationResponse(
-            application.getId(), application.getCompanyName(), application.getJobTitle(), application.getJobUrl(),
+            application.getId(), application.getJobId(), application.getCompanyName(), application.getJobTitle(), application.getJobUrl(),
             application.getLocation(), application.getApplicationSource(), application.getStatus(),
             application.getApplicationDate(), application.getNotes(), application.getCreatedAt(), application.getUpdatedAt()
         );

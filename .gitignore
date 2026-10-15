@@ -30,5 +30,10 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+# Local environment secrets
+.env
+.env.*
+!.env.example
+
 ### VS Code ###
 .vscode/

@@ -11,15 +11,14 @@ This first backend milestone provides CRUD, filtering, and database-backed analy
 - Flyway migrations
 - Maven
 
-## Start PostgreSQL
+## Database configuration
 
-```powershell
-docker compose up -d
-```
-
-The development database uses `localhost:5432`, database `applytrack`, user
-`applytrack`, and password `applytrack`. These defaults can be replaced with the
-`DATABASE_URL`, `DATABASE_USERNAME`, and `DATABASE_PASSWORD` environment variables.
+The application requires the configured Neon PostgreSQL target. Set
+`DATABASE_URL`, `DATABASE_USERNAME`, and `DATABASE_PASSWORD` in the process
+environment before starting it. Startup rejects missing or malformed URLs and
+URLs that do not point to the configured Neon host and `neondb` database.
+For local runs, Spring Boot loads untracked `.env` and `.env.local` files from
+the repository root. Use plain `KEY=value` lines; keep these files out of Git.
 
 ## Run the application and UI
 
@@ -44,15 +43,22 @@ git commit -m "Prepare Spring Boot app for Vercel"
 git push origin main
 ```
 
-In Vercel, set the project Root Directory to the repository root and add this
-Production environment variable:
+In Vercel, set the project Root Directory to the repository root and configure
+these Production environment variables in Project Settings. A local `.env` file
+is not automatically uploaded or read by a Vercel deployment:
 
 ```text
+DATABASE_URL=jdbc:postgresql://ep-broad-heart-ay53aflf-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+DATABASE_USERNAME=neondb_owner
 DATABASE_PASSWORD=<your Neon database password>
+JWT_SECRET=<at least 32 random bytes>
 ```
 
-Do not add the password to `application.properties` or commit it to Git. Redeploy
-the commit after the variable is saved. Verify these routes after deployment:
+`DATABASE_URL` is required and startup rejects a non-PostgreSQL URL or any host
+or database other than the configured Neon `neondb`. Keep the password in
+`DATABASE_PASSWORD`; do not embed it in the URL, add it to
+`application.properties`, or commit it to Git. Redeploy the commit after the
+variables are saved. Verify these routes after deployment:
 
 ```text
 GET /api/v1/health
@@ -62,6 +68,62 @@ GET /
 
 The dashboard calls same-origin `/api/v1/...` endpoints, so it needs no separate
 frontend URL or CORS configuration.
+
+## Authentication and referrals
+
+Registration and login return a JWT. Send it as a Bearer token on protected API
+requests. Google and LinkedIn provider login are currently disabled. Set
+CORS_ALLOWED_ORIGINS to the comma-separated list of allowed frontend origins
+only when the dashboard is hosted on a different origin.
+
+DATABASE_URL, DATABASE_PASSWORD, and JWT_SECRET are required to start the app.
+JWT_SECRET must contain at least 32 UTF-8 bytes. SMTP uses MAIL_HOST, MAIL_PORT,
+MAIL_USERNAME, MAIL_PASSWORD, and MAIL_FROM.
+
+Password recovery sends a six-digit, ten-minute code and allows at most five
+verification attempts. It is rate-limited to one request per minute and five
+requests per account per hour. To send recovery mail through the requested Gmail
+account, configure `MAIL_HOST=smtp.gmail.com`, `MAIL_PORT=587`,
+`MAIL_USERNAME=umasankar.varadati@gmail.com`, `MAIL_FROM=umasankar.varadati@gmail.com`,
+and `MAIL_PASSWORD` as a Google App Password. Enable 2-Step Verification in the
+Google account and create an App Password; do not use the normal account password.
+Set these values in local `.env` and Vercel Production environment variables,
+then restart or redeploy the app.
+
+Referral routes are nested under an application. They support contact list,
+create, update, delete, message preview, send, send-all, mark-sent, and
+mark-referred operations.
+
+Each account has one reusable referral message template, editable in the
+dashboard above the application list. The authenticated
+`GET /api/v1/referral-template` and `PUT /api/v1/referral-template` endpoints
+read and update it. New contacts copy the current template unless a custom
+message is entered; later template edits do not overwrite saved contact copies.
+Supported placeholders include `{{name}}`, `{{job_ID}}`, `{{role}}`,
+`{{company}}`, `{{jobTitle}}`, `{{jobId}}`, `{{jobUrl}}`, and `{{senderName}}`.
+
+V4 assigns existing ownerless applications to the earliest account, ordered by
+account creation time and UUID. If there are no accounts at migration time, the
+first account created by local registration claims those applications.
+The migration and account creation update only rows whose owner is NULL.
+
+### Protecting production data during deployment
+
+Before each production deployment, create a Neon backup or branch from the
+production database in the Neon console. Record the current application row
+count and applied migration version:
+
+```sql
+SELECT count(*) AS application_rows FROM job_applications;
+SELECT version FROM flyway_schema_history WHERE success = true ORDER BY installed_rank DESC LIMIT 1;
+```
+
+After deployment, verify the Vercel `DATABASE_URL` still targets the Neon host
+and `neondb` above, then run the same queries against that database. Compare the
+row count and confirm Flyway applied the pending migrations (currently through
+version `6`). Sign in with the first account and confirm the existing
+applications are visible. A Flyway failure should stop startup; do not point
+the deployment at a replacement or empty database to work around it.
 
 ## API endpoints
 

@@ -9,6 +9,7 @@ import org.hibernate.validator.constraints.URL;
 import java.time.LocalDate;
 
 public record JobApplicationRequest(
+    @Size(max = 100) String jobId,
     @NotBlank @Size(max = 150) String companyName,
     @NotBlank @Size(max = 150) String jobTitle,
     @URL @Size(max = 2048) String jobUrl,

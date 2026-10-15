@@ -9,5 +9,6 @@ public enum ApplicationStatus {
     OFFER,
     ACCEPTED,
     REJECTED,
-    WITHDRAWN
+    WITHDRAWN,
+    REFERRED
 }

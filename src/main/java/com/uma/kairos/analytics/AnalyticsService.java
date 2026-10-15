@@ -1,5 +1,6 @@
 package com.umasankar.applytrack.analytics;
 
+import com.umasankar.applytrack.auth.CurrentUser;
 import com.umasankar.applytrack.application.ApplicationStatus;
 import com.umasankar.applytrack.application.JobApplicationRepository;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class AnalyticsService {
 
     private Map<ApplicationStatus, Long> statusCounts() {
         Map<ApplicationStatus, Long> counts = new EnumMap<>(ApplicationStatus.class);
-        repository.countGroupedByStatus().forEach(row -> counts.put(row.getStatus(), row.getTotal()));
+        repository.countGroupedByStatus(CurrentUser.id()).forEach(row -> counts.put(row.getStatus(), row.getTotal()));
         return counts;
     }
 
